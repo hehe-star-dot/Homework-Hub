@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homework Hub</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #0d1a26;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .starry-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .star {
+            position: absolute;
+            background: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-100vh) translateX(0); opacity: 0; }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.8; }
+            100% { transform: translateY(100vh) translateX(5vw); opacity: 0; }
+        }
+        header {
+            background-color: #0d1a26;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #1e3a5f;
+        }
+        h1 { margin: 0; color: #4a90e2; }
+        nav { margin: 10px 0; }
+        nav a {
+            margin: 0 15px;
+            color: #4a90e2;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        nav a:hover { color: #357abd; }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .subject-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .subject-card {
+            background-color: #252526;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #1e3a5f;
+            display: flex;
+            flex-direction: column;
+        }
+        .subject-card h2 {
+            color: #4a90e2;
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+            cursor: text;
+            padding: 4px;
+            border-radius: 4px;
+        }
+        .subject-card h2:hover {
+            background-color: #303030;
+        }
+        .task-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 10px 0;
+            flex-grow: 1;
+        }
+        .task-item {
+            background-color: #303030;
+            border-radius: 4px;
+            margin: 8px 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .task-main {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .task-main span {
+            flex-grow: 1;
+            word-break: break-word;
+        }
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-start;
+        }
+        .calendar-btn, .notes-btn, .delete-btn {
+            background-color: #4a90e2;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .delete-btn {
+            background-color: #e24a4a;
+            display: none;
+        }
+        .task-item.completed .delete-btn {
+            display: inline-block;
+        }
+        .calendar-btn:hover, .notes-btn:hover {
+            background-color: #357abd;
+        }
+        .delete-btn:hover {
+            background-color: #bd3535;
+        }
+        .task-input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+            background-color: #404040;
+            border: 1px solid #1e3a5f;
+            border-radius: 4px;
+            color: white;
+            box-sizing: border-box;
+        }
+        .add-task {
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+            background-color: #4a90e2;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+        .add-task:hover {
+            background-color: #357abd;
+        }
+        .notes-textarea {
+            display: none;
+            position: absolute;
+            z-index: 100;
+            background-color: #404040;
+            border: 1px solid #1e3a5f;
+            border-radius: 4px;
+            padding: 8px;
+            color: white;
+            width: 220px;
+            height: 120px;
+            resize: vertical;
+        }
+        .date-picker {
+            display: none;
+            position: absolute;
+            z-index: 100;
+        }
+        .date-picker input[type="date"] {
+            background-color: #404040;
+            color: white;
+            border: 1px solid #1e3a5f;
+            border-radius: 4px;
+            padding: 5px;
+        }
+        .google-calendar-section {
+            margin-top: 40px;
+            text-align: center;
+        }
+        .calendar-section {
+            margin-top: 40px;
+            background-color: #252526;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #1e3a5f;
+        }
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .calendar-nav button {
+            background-color: #4a90e2;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+        }
+        .calendar-day {
+            padding: 10px;
+            background-color: #303030;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .calendar-day.has-task::after {
+            content: '•';
+            color: #e24a4a;
+            margin-left: 5px;
+        }
+        .calendar-day.today {
+            background-color: #ffeb3b;
+            color: #000;
+        }
+        .today-btn {
+            display: block;
+            margin: 15px auto 0;
+            background-color: #4a90e2;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="starry-bg"></div>
+    <header>
+        <h1>Homework Hub</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="games.html">Games</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="subject-grid" id="subject-grid">
+            <!-- Subjects will be generated by JS -->
+        </div>
+
+        <div class="google-calendar-section">
+            <iframe src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FNew_York&showPrint=0&src=bmdlb3JnZUBzdHVkZW50Lm1vbnR2YWxlazgub3Jn&src=Y18xNzVmNzllZDU0N2MxMmE5MTBmOTQzZWU3MDJmM2ZkMmRmNmQ3YmE0NzI4YjlhZWM5ZGNiZGEzODc2NzAyNmRhQGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20&src=bW9udHZhbGVrOC5vcmdfZWNlaDFwZ2VwdWthOTB0YWMyYzVncTc1N29AZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ&src=Y19jbGFzc3Jvb203MzhjMDM1OEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=Y19jbGFzc3Jvb20zM2YyZDQ3NkBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=Y19jbGFzc3Jvb20zZDgyYmRhNUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=Y19jbGFzc3Jvb20yZWM5NmNhMUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=Y19jbGFzc3Jvb201NDM0YWEwN0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=bW9udHZhbGVrOC5vcmdfY2xhc3Nyb29tODA5MmI3MWZAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ&src=Y19jbGFzc3Jvb20yMDU1NzAxMEBncm91cC5jYWxlbmZhci5nb29nbGUuY29t&src=Y19jbGFzc3Jvb200MTQ2NjRmYUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=Y19jbGFzc3Jvb20wN2ZhNThlYUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=Y19jbGFzc3Jvb21kMjQ1MTQ4N0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=Y19jbGFzc3Jvb21hZWQ4YTU0YkBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=Y19jbGFzc3Jvb21hN2Q3OWU4OEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=Y19jbGFzc3Jvb20zYzlkMDJjOEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=Y19jbGFzc3Jvb201OWI1MGY0MUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%23009688&color=%239E69AF&color=%23F6BF26&color=%23202124&color=%230047a8&color=%23007b83&color=%23007b83&color=%23007b83&color=%23616161&color=%23c26401&color=%230047a8&color=%237627bb&color=%23202124&color=%23b80672&color=%230047a8&color=%23202124&color=%23174ea6" style="border:solid 1px #777" width="800" height="600" frameborder="0" scrolling="no"></iframe>
+        </div>
+
+        <div class="calendar-section" id="calendar-section"></div>
+    </div>
+
+    <script>
+        const DEFAULT_SUBJECTS = [
+            { id: 'social-studies', name: 'Social Studies' },
+            { id: 'spanish', name: 'Spanish' },
+            { id: 'science', name: 'Science' },
+            { id: 'language-arts', name: 'Language Arts' },
+            { id: 'math', name: 'Math' },
+            { id: 'no-courses', name: 'No Courses' }
+        ];
+
+        let subjects = JSON.parse(localStorage.getItem('subjects')) || DEFAULT_SUBJECTS;
+        let allTasks = {};
+        let currentMonthOffset = 0;
+
+        // Load tasks
+        subjects.forEach(s => {
+            allTasks[s.id] = JSON.parse(localStorage.getItem(s.id + 'Tasks')) || [];
+        });
+
+        function saveSubjects() {
+            localStorage.setItem('subjects', JSON.stringify(subjects));
+        }
+
+        function renderSubjects() {
+            const grid = document.getElementById('subject-grid');
+            grid.innerHTML = '';
+            subjects.forEach(subject => {
+                const card = document.createElement('div');
+                card.className = 'subject-card';
+                card.id = subject.id;
+
+                const h2 = document.createElement('h2');
+                h2.textContent = subject.name;
+                h2.contentEditable = true;
+                h2.spellcheck = false;
+                h2.addEventListener('blur', () => {
+                    const newName = h2.textContent.trim() || subject.name;
+                    h2.textContent = newName;
+                    subject.name = newName;
+                    saveSubjects();
+                });
+                h2.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        h2.blur();
+                    }
+                });
+
+                const ul = document.createElement('ul');
+                ul.className = 'task-list';
+                ul.id = subject.id + '-tasks';
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'task-input';
+                input.placeholder = 'Add task...';
+
+                const btn = document.createElement('button');
+                btn.className = 'add-task';
+                btn.textContent = 'Add Task';
+                btn.onclick = () => addTask(subject.id);
+
+                card.appendChild(h2);
+                card.appendChild(ul);
+                card.appendChild(input);
+                card.appendChild(btn);
+                grid.appendChild(card);
+
+                // Render existing tasks
+                allTasks[subject.id].forEach(task => {
+                    createTaskElement(subject.id, task.text, task.completed, task.dueDate, task.notes || '');
+                });
+            });
+        }
+
+        function addTask(subjectId) {
+            const input = document.querySelector(`#${subjectId} .task-input`);
+            const text = input.value.trim();
+            if (!text) return;
+            createTaskElement(subjectId, text, false, null, '');
+            saveTask(subjectId, text, false, null, '');
+            input.value = '';
+        }
+
+        function createTaskElement(subjectId, text, completed, dueDate, notes) {
+            const ul = document.getElementById(subjectId + '-tasks');
+            const li = document.createElement('li');
+            li.className = 'task-item' + (completed ? ' completed' : '');
+
+            const main = document.createElement('div');
+            main.className = 'task-main';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = completed;
+            checkbox.onchange = () => updateTaskStatus(subjectId, text, checkbox.checked, li);
+
+            const span = document.createElement('span');
+            span.textContent = text + (dueDate ? ` (Due: ${dueDate})` : '');
+            if (completed) span.style.textDecoration = 'line-through';
+
+            main.appendChild(checkbox);
+            main.appendChild(span);
+
+            const actions = document.createElement('div');
+            actions.className = 'task-actions';
+
+            const calBtn = document.createElement('button');
+            calBtn.className = 'calendar-btn';
+            calBtn.textContent = '📅';
+            calBtn.onclick = () => showDatePicker(subjectId, text, calBtn);
+
+            const notesBtn = document.createElement('button');
+            notesBtn.className = 'notes-btn';
+            notesBtn.textContent = '📓';
+            notesBtn.onclick = () => showNotesEditor(subjectId, text, notesBtn);
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'delete-btn';
+            delBtn.textContent = '✖';
+            delBtn.onclick = () => deleteTask(subjectId, text, li);
+
+            actions.appendChild(calBtn);
+            actions.appendChild(notesBtn);
+            actions.appendChild(delBtn);
+
+            li.appendChild(main);
+            li.appendChild(actions);
+            ul.appendChild(li);
+        }
+
+        function saveTask(subjectId, text, completed, dueDate, notes) {
+            let tasks = JSON.parse(localStorage.getItem(subjectId + 'Tasks')) || [];
+            const existing = tasks.find(t => t.text === text);
+            if (existing) {
+                existing.completed = completed;
+                existing.dueDate = dueDate;
+                existing.notes = notes;
+            } else {
+                tasks.push({ text, completed, dueDate, notes });
+            }
+            localStorage.setItem(subjectId + 'Tasks', JSON.stringify(tasks));
+            allTasks[subjectId] = tasks;
+            renderCalendar();
+            if (Notification.permission === 'granted') checkDueDates();
+        }
+
+        function updateTaskStatus(subjectId, text, completed, li) {
+            let tasks = JSON.parse(localStorage.getItem(subjectId + 'Tasks')) || [];
+            tasks = tasks.map(t => t.text === text ? { ...t, completed } : t);
+            localStorage.setItem(subjectId + 'Tasks', JSON.stringify(tasks));
+            allTasks[subjectId] = tasks;
+            li.classList.toggle('completed', completed);
+            const span = li.querySelector('span');
+            span.style.textDecoration = completed ? 'line-through' : 'none';
+        }
+
+        function deleteTask(subjectId, text, li) {
+            let tasks = JSON.parse(localStorage.getItem(subjectId + 'Tasks')) || [];
+            tasks = tasks.filter(t => t.text !== text);
+            localStorage.setItem(subjectId + 'Tasks', JSON.stringify(tasks));
+            allTasks[subjectId] = tasks;
+            li.remove();
+            renderCalendar();
+        }
+
+        function showDatePicker(subjectId, text, button) {
+            let picker = document.querySelector('.date-picker');
+            if (picker) picker.remove();
+            picker = document.createElement('div');
+            picker.className = 'date-picker';
+            const rect = button.getBoundingClientRect();
+            picker.style.left = rect.left + 'px';
+            picker.style.top = (rect.bottom + window.scrollY) + 'px';
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.onchange = () => {
+                const [y, m, d] = input.value.split('-');
+                const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                const dueDate = `${months[parseInt(m)-1]} ${parseInt(d)}`;
+                updateDueDate(subjectId, text, dueDate);
+                picker.remove();
+            };
+            picker.appendChild(input);
+            document.body.appendChild(picker);
+            picker.style.display = 'block';
+            input.focus();
+        }
+
+        function updateDueDate(subjectId, text, dueDate) {
+            let tasks = JSON.parse(localStorage.getItem(subjectId + 'Tasks')) || [];
+            tasks = tasks.map(t => t.text === text ? { ...t, dueDate } : t);
+            localStorage.setItem(subjectId + 'Tasks', JSON.stringify(tasks));
+            allTasks[subjectId] = tasks;
+            // Update the displayed text
+            const lis = document.querySelectorAll(`#${subjectId}-tasks .task-item`);
+            lis.forEach(li => {
+                const span = li.querySelector('span');
+                if (span && span.textContent.startsWith(text)) {
+                    span.textContent = text + ` (Due: ${dueDate})`;
+                }
+            });
+            renderCalendar();
+            if (Notification.permission === 'granted') checkDueDates();
+        }
+
+        function showNotesEditor(subjectId, text, button) {
+            // Close any existing
+            const existing = document.querySelector('.notes-textarea');
+            if (existing) {
+                updateTaskNotes(existing.dataset.subject, existing.dataset.text, existing.value.trim());
+                existing.remove();
+            }
+
+            // Get current notes from storage
+            const tasks = JSON.parse(localStorage.getItem(subjectId + 'Tasks')) || [];
+            const task = tasks.find(t => t.text === text);
+            const currentNotes = task ? (task.notes || '') : '';
+
+            const ta = document.createElement('textarea');
+            ta.className = 'notes-textarea';
+            ta.value = currentNotes;
+            ta.dataset.subject = subjectId;
+            ta.dataset.text = text;
+            const rect = button.getBoundingClientRect();
+            ta.style.left = rect.left + 'px';
+            ta.style.top = (rect.bottom + window.scrollY) + 'px';
+
+            ta.onblur = () => {
+                updateTaskNotes(subjectId, text, ta.value.trim());
+                ta.remove();
+            };
+
+            document.body.appendChild(ta);
+            ta.style.display = 'block';
+            ta.focus();
+        }
+
+        function updateTaskNotes(subjectId, text, notes) {
+            let tasks = JSON.parse(localStorage.getItem(subjectId + 'Tasks')) || [];
+            tasks = tasks.map(t => t.text === text ? { ...t, notes } : t);
+            localStorage.setItem(subjectId + 'Tasks', JSON.stringify(tasks));
+            allTasks[subjectId] = tasks;
+        }
+
+        // Calendar rendering (kept simple)
+        function renderCalendar() {
+            const section = document.getElementById('calendar-section');
+            section.innerHTML = '';
+            const today = new Date();
+            const start = new Date(today.getFullYear(), today.getMonth() + currentMonthOffset, 1);
+
+            for (let i = 0; i < 3; i++) {
+                const monthDate = new Date(start.getFullYear(), start.getMonth() + i, 1);
+                const monthDiv = document.createElement('div');
+                monthDiv.className = 'month';
+
+                const nav = document.createElement('div');
+                nav.className = 'calendar-nav';
+                const prev = document.createElement('button');
+                prev.textContent = '◄';
+                prev.onclick = () => { currentMonthOffset--; renderCalendar(); };
+                const title = document.createElement('h2');
+                title.textContent = monthDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+                const next = document.createElement('button');
+                next.textContent = '►';
+                next.onclick = () => { currentMonthOffset++; renderCalendar(); };
+                nav.append(prev, title, next);
+                monthDiv.appendChild(nav);
+
+                const grid = document.createElement('div');
+                grid.className = 'calendar-grid';
+                const daysInMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate();
+                const firstDay = monthDate.getDay();
+
+                for (let j = 0; j < firstDay; j++) {
+                    grid.appendChild(document.createElement('div'));
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'calendar-day';
+                    dayEl.textContent = day;
+                    if (monthDate.getMonth() === today.getMonth() &&
+                        monthDate.getFullYear() === today.getFullYear() &&
+                        day === today.getDate()) {
+                        dayEl.classList.add('today');
+                    }
+
+                    const dueStr = `${monthDate.toLocaleString('en-US', { month: 'short' })} ${day}`;
+                    let has = false;
+                    subjects.forEach(s => {
+                        (allTasks[s.id] || []).forEach(t => {
+                            if (t.dueDate === dueStr) has = true;
+                        });
+                    });
+                    if (has) dayEl.classList.add('has-task');
+                    grid.appendChild(dayEl);
+                }
+                monthDiv.appendChild(grid);
+                section.appendChild(monthDiv);
+            }
+
+            const todayBtn = document.createElement('button');
+            todayBtn.className = 'today-btn';
+            todayBtn.textContent = 'Today';
+            todayBtn.onclick = () => { currentMonthOffset = 0; renderCalendar(); };
+            section.appendChild(todayBtn);
+        }
